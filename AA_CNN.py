@@ -5,7 +5,7 @@ from torch import einsum
 import numpy as np
 
 class AttentionConv2d(nn.Module):
-    def __init__(self, input_dim, output_dim, dk, dv, num_heads, kernel_size, padding, height=None, width=None):
+    def __init__(self, input_dim, output_dim, dk, dv, num_heads, kernel_size, padding, device, height=None, width=None):
         super(AttentionConv2d, self).__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -23,6 +23,7 @@ class AttentionConv2d(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
         self.pe = None
+        self.device = device
         self.c = 10000
 
     def compute_pe(self):
@@ -37,7 +38,7 @@ class AttentionConv2d(nn.Module):
                     P[i, j, 2*k+d//2] = np.sin(j/denominator)
                     P[i, j, 2*k+1+d//2] = np.cos(j/denominator)
     
-        self.pe = torch.permute(torch.tensor(P, dtype=torch.float32, device='cuda:0'), (2, 0, 1))
+        self.pe = torch.permute(torch.tensor(P, dtype=torch.float32, device=self.device), (2, 0, 1))
         
 
     def forward(self, input):
@@ -72,7 +73,7 @@ class AttentionConv2d(nn.Module):
 
 
 class LinearAttentionConv2d(nn.Module):
-    def __init__(self, input_dim, output_dim, dk, dv, num_heads, kernel_size, padding, height=None, width=None):
+    def __init__(self, input_dim, output_dim, dk, dv, num_heads, kernel_size, padding, device, height=None, width=None):
         super(LinearAttentionConv2d, self).__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -91,6 +92,7 @@ class LinearAttentionConv2d(nn.Module):
         self.softmax_col = nn.Softmax(dim=-2)
 
         self.pe = None
+        self.device = device
         self.c = 10000
 
     def compute_pe(self):
@@ -105,7 +107,7 @@ class LinearAttentionConv2d(nn.Module):
                     P[i, j, 2*k+d//2] = np.sin(j/denominator)
                     P[i, j, 2*k+1+d//2] = np.cos(j/denominator)
     
-        self.pe = torch.permute(torch.tensor(P, dtype=torch.float32, device='cuda:0'), (2, 0, 1))
+        self.pe = torch.permute(torch.tensor(P, dtype=torch.float32, device=self.device), (2, 0, 1))
         
 
     def forward(self, input):
